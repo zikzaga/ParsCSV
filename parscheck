@@ -1,0 +1,49 @@
+import requests
+from bs4 import BeautifulSoup
+
+def parse_product_info(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Название товара
+    title = soup.find('h1', class_='product-title').text.strip()
+
+    # Цена товара
+    price = soup.find('span', class_='price').text.strip()
+
+    # Описание товара
+    description = soup.find('div', class_='description').text.strip()
+
+    # Характеристики товара
+    characteristics = {}
+    characteristics_table = soup.find('table', class_='attributes-table')
+    rows = characteristics_table.find_all('tr')
+    for row in rows:
+        cells = row.find_all('td')
+        if len(cells) == 2:
+            characteristic_name = cells[0].text.strip()
+            characteristic_value = cells[1].text.strip()
+            characteristics[characteristic_name] = characteristic_value
+
+    # Возвращаем словарь с информацией о товаре
+    return {
+        'title': title,
+        'price': price,
+        'description': description,
+        'characteristics': characteristics
+    }
+
+# URL страницы с товаром
+product_url = 'https://www.fitokgroup.com/products-detail/i-5896.html'
+
+# Получаем информацию о товаре
+product_info = parse_product_info(product_url)
+
+# Выводим информацию о товаре
+print('Название:', product_info['title'])
+print('Цена:', product_info['price'])
+print('Описание:', product_info['description'])
+print('Характеристики:')
+for characteristic, value in product_info['characteristics'].items():
+    print(f'{characteristic}: {value}')
+
